@@ -1,3 +1,6 @@
 [submodule "esp-idf-v5.0.4"]
 	path = esp-idf-v5.0.4
 	url = https://github.com/espressif/esp-idf.git
+[submodule "esp-idf-v5.0.1"]
+	path = esp-idf-v5.0.1
+	url = https://github.com/espressif/esp-idf.git
