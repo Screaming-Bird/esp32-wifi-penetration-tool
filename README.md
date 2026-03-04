@@ -1,4 +1,7 @@
 # Description
+The purpose of this repo is to simplify the esp-idf build process for specific boards, in an attempt to streamline the processs. This is the third fork with OG credit to risinek, and alambin for a fork, their notes are below. 
+
+
 
 This project is a fork of "ESP32 Wi-Fi Penetration Tool" by risinek. Original repo can be found [here](https://github.com/risinek/esp32-wifi-penetration-tool). Below you can find description of original project.<br>
 The goal of this fork is to make ESP32 to be more autonomous, so that you can place it near attack target, configure it and it will continue attack for a long time. Because of that this project was extended with such features as OTA, Bluetooth console, etc.
