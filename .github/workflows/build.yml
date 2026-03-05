@@ -10,16 +10,16 @@ jobs:
   build:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
-        with:
-          submodules: recursive
-
-      - name: ESP-IDF Build
-        uses: espressif/esp-idf-ci-action@v1
-        with:
-          esp_idf_version: v5.0.1  # or latest / v5.2 / etc.
-          target: esp32s3
-          path: '.'              # change if project is in subfolder
+    - name: Checkout repo
+      uses: actions/checkout@v3
+      with:
+        submodules: 'recursive'
+    - name: Espressif (ESP-IDF) Build Action
+      uses: HareshPrajapati/esp_idf_build_action@V2
+      with:
+        esp_idf_version: 'v5.0.1'
+        target: 'esp32s3'
+        path: '.'
 
       - name: Upload binaries
         uses: actions/upload-artifact@v4
@@ -29,3 +29,4 @@ jobs:
             build/*.bin
             build/*.elf
             build/bootloader/bootloader.bin
+
