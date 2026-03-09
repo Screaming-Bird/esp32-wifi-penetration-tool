@@ -1,28 +1,31 @@
-name: Build
+name: Build ESP32-S3 Firmware (No Bluetooth)
 
 on:
   push:
-    branches:
-      - main
-      - no-bt
+    branches: [ main, no-bt ]
+  pull_request:
+  workflow_dispatch:
 
 jobs:
   build:
     runs-on: ubuntu-latest
-
     steps:
-    - name: Checkout Code
-      uses: actions/checkout@v2
-
-    - name: Set Up Node.js
-      uses: actions/setup-node@v2
-      with:
-        node-version: '14'
-
-    - name: Install Dependencies
-      run: |
-        npm install
-
-    - name: Run Build
-      run: |
-        npm run build
+      - name: Checkout code
+        uses: actions/checkout@v3
+        with:
+          submodules: 'recursive'
+      - name: Build with ESP-IDF
+        uses: espressif/esp-idf-ci-action@e69e0b4a7f32bff30e9bbd18576591f90299a511
+        with:
+          esp_idf_version: v5.0.1
+          target: esp32s3
+          path: '.'
+      - name: Upload build artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: firmware-esp32s3-no-bt
+          path: |
+            build/*.bin
+            build/*.elf
+            build/bootloader/bootloader.bin
+          retention-days: 30
