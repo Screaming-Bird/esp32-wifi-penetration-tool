@@ -1,31 +1,28 @@
-name: Build ESP32 Firmware
+name: Build
 
 on:
   push:
-    branches: [ main ]
-  pull_request:
-  workflow_dispatch:
+    branches:
+      - main
+      - no-bt
 
 jobs:
   build:
     runs-on: ubuntu-latest
+
     steps:
-      uses: actions/checkout@v3
-      with:
-        submodules: 'recursive'
-    - name: Espressif (ESP-IDF) Build Action
-      uses: HareshPrajapati/esp_idf_build_action@V2
-      with:
-        esp_idf_version: 'v5.0.1'
-        target: 'esp32s3'
-        path: '.'
+    - name: Checkout Code
+      uses: actions/checkout@v2
 
-      - name: Upload binaries
-        uses: actions/upload-artifact@v4
-        with:
-          name: firmware
-          path: |
-            build/*.bin
-            build/*.elf
-            build/bootloader/bootloader.bin
+    - name: Set Up Node.js
+      uses: actions/setup-node@v2
+      with:
+        node-version: '14'
 
+    - name: Install Dependencies
+      run: |
+        npm install
+
+    - name: Run Build
+      run: |
+        npm run build
