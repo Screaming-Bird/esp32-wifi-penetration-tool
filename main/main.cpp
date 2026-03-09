@@ -16,8 +16,10 @@
 #include "WiFiFramesSender.h"
 #include "attack.h"
 #include "attack_dos.h"
+#ifdef CONFIG_BT_ENABLED
 #include "bluetooth_serial.h"
 #include "bt_logs_forwarder.h"
+#endif
 #include "device_id.h"
 #include "esp_event.h"
 #include "esp_log.h"
@@ -35,7 +37,9 @@
 namespace {
 const char* LOG_TAG = "main";
 SerialCommandDispatcher gSerialCommandDispatcher;
+#ifdef CONFIG_BT_ENABLED
 BtLogsForwarder gBtLogsForwarder;
+#endif
 Ota gOta;
 constexpr uint32_t kInactivityTimeoutS{10 * 60};
 Timer gInactivityTimer;
@@ -47,6 +51,7 @@ extern "C" {
 #endif
 
 #ifdef CONFIG_ENABLE_UNIT_TESTS
+#ifdef CONFIG_BT_ENABLED
 void testBT() {
   ESP_LOGD(LOG_TAG, "Testing BT transmition");
 
@@ -60,7 +65,8 @@ void testBT() {
     BluetoothSerial::instance().send(std::move(line));
   }
 }
-#endif
+#endif  // CONFIG_BT_ENABLED
+#endif  // CONFIG_ENABLE_UNIT_TESTS
 
 void setLogLevel(const std::string& levelStr) {
   if (levelStr == "n")
@@ -85,6 +91,7 @@ void setSerialCommandsHandlers() {
                                                ESP_LOGI(LOG_TAG, "RESETTING ESP32");
                                                esp_restart();
                                              });
+#ifdef CONFIG_BT_ENABLED
   gSerialCommandDispatcher.setCommandHandler(SerialCommandDispatcher::CommandType::kStartLogs,
                                              [](const std::string& param) {
                                                ESP_LOGI(LOG_TAG, "Start redirecting logs to BT");
@@ -95,6 +102,7 @@ void setSerialCommandsHandlers() {
                                                ESP_LOGI(LOG_TAG, "Stop redirecting logs to BT");
                                                gBtLogsForwarder.stopForwarding();
                                              });
+#endif
   gSerialCommandDispatcher.setCommandHandler(SerialCommandDispatcher::CommandType::kLimitLogs,
                                              [](const std::string& param) {
                                                bool shouldLimit{false};
@@ -115,6 +123,7 @@ void setSerialCommandsHandlers() {
                                              [&gLed](const std::string& param) { gLed.off(); });
   gSerialCommandDispatcher.setCommandHandler(SerialCommandDispatcher::CommandType::kLedBlink,
                                              [&gLed](const std::string& param) { gLed.startBlinking(); });
+#ifdef CONFIG_BT_ENABLED
   gSerialCommandDispatcher.setCommandHandler(SerialCommandDispatcher::CommandType::kHelp, [](const std::string& param) {
     BluetoothSerial::instance().send(gSerialCommandDispatcher.getSupportedCommands());
   });
@@ -124,8 +133,10 @@ void setSerialCommandsHandlers() {
   gSerialCommandDispatcher.setCommandHandler(
       SerialCommandDispatcher::CommandType::kGetDosAttackStatus,
       [](const std::string& param) { BluetoothSerial::instance().send(attack_dos_get_status_json()); });
+#endif  // CONFIG_BT_ENABLED
   gSerialCommandDispatcher.setCommandHandler(SerialCommandDispatcher::CommandType::kStopAttack,
                                              [](const std::string& param) { stopAttack(); });
+#ifdef CONFIG_BT_ENABLED
   gSerialCommandDispatcher.setCommandHandler(
       SerialCommandDispatcher::CommandType::kBtTerminalConnected, [&gInactivityTimer](const std::string& param) {
         if (param == "1") {
@@ -138,6 +149,7 @@ void setSerialCommandsHandlers() {
           BluetoothSerial::instance().send(greeting + gSerialCommandDispatcher.getSupportedCommands());
         }
       });
+#endif  // CONFIG_BT_ENABLED
 }
 
 void app_main(void) {
@@ -145,10 +157,12 @@ void app_main(void) {
   // (by defining LOG_LOCAL_LEVEL) doesn't work anymore. It is considered as bug, but not fixed yet
   esp_log_level_set("*", ESP_LOG_VERBOSE);
 
+#ifdef CONFIG_BT_ENABLED
   BluetoothSerial::instance().init(&gBtLogsForwarder, [](std::string receivedData) {
     gSerialCommandDispatcher.onNewSymbols(std::move(receivedData));
   });
   gBtLogsForwarder.startForwarding();
+#endif
 
   ESP_LOGD(LOG_TAG, "app_main() started. Device ID='%d'", CONFIG_DEVICE_ID);
   ESP_ERROR_CHECK(esp_event_loop_create_default());
