@@ -15,7 +15,7 @@ jobs:
         with:
           submodules: 'recursive'
       - name: Build with ESP-IDF
-        uses: espressif/esp-idf-ci-action@e69e0b4a7f32bff30e9bbd18576591f90299a511
+        uses: espressif/esp-idf-ci-action@v1.2.0
         with:
           esp_idf_version: v5.0.1
           target: esp32s3
